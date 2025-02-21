@@ -1,5 +1,5 @@
 from database import Base
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 
 
 class Tasks(Base):
@@ -10,3 +10,17 @@ class Tasks(Base):
     description = Column(String)
     status = Column(Boolean, default=False)
     priority = Column(Integer)
+    owner_id = Column(Integer, ForeignKey("Users.id"))
+
+
+class Users(Base):
+    __tablename__ = "Users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True)
+    username = Column(String, unique=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    status = Column(Boolean, default=True)
+    hashed_password = Column(String)
+    role = Column(String)
