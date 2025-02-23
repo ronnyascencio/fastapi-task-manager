@@ -2,6 +2,7 @@ from typing import Annotated
 
 from database import SessionLocal
 from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from models import Users
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field
@@ -24,6 +25,19 @@ def get_db():
 
 
 db_dependecy = Annotated[Session, Depends(get_db)]
+
+
+"""User auth functions"""
+
+def user_auth(user_name: str, password: str, db,):
+    user = db.query(Users).filter(Users.username == user_name).first()
+    
+    if not user:
+        return False
+    if not bcrypt_context.verify(password, user.hashed_password):
+        return False
+    return True
+
 
 """ pydantic derequest """
 
@@ -55,3 +69,13 @@ async def create_user(db: db_dependecy, create_user_request: CreateUserRequest):
     )
     db.add(user_model)
     db.commit()
+
+
+@router.post("/token")
+async def login_acces_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependecy):
+    
+    user = user_auth(form_data.username, form_data.password, db)
+    if not user:
+        return "there is no user or pasword"
+    return "user and password matches"
+    
