@@ -2,21 +2,23 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 from database import SessionLocal
-from fastapi import APIRouter, Depends
-from fastapi.security import OAuth2PasswordRequestForm
-from jose import jwt
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
 from models import Users
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 from starlette import status
 
-router = APIRouter()
+router = APIRouter( prefix="/auth", tags=["auth"])
 
 SECRET_KE = "00dd1dd7df0dd87eae9acf1cf622d22c381a3f339b27d34aad911da34f1df161"
-ALGOITHM = "HS256"
+ALGORITHM = "HS256"
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+oa2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 """Data base """
 
@@ -29,7 +31,7 @@ def get_db():
         db.close_all()
 
 
-db_dependecy = Annotated[Session, Depends(get_db)]
+db_dependency = Annotated[Session, Depends(get_db)]
 
 
 """User auth functions"""
@@ -44,14 +46,28 @@ def user_auth(user_name: str, password: str, db,):
     return user
 
 
-def create_acces_token(username: str, user_id: int, expires_data: timedelta):
+def create_access_token(username: str, user_id: int, expires_data: timedelta):
     encode = {'sub': username, 'id': user_id}
     expires = datetime.now(timezone.utc) + expires_data
     encode.update({'exp': expires})
-    return jwt.encode(encode, SECRET_KE, algorithm=ALGOITHM)
+    return jwt.encode(encode, SECRET_KE, algorithm=ALGORITHM)
     
 
-""" pydantic derequest """
+async def get_current_user(token: Annotated[str, Depends(oa2_bearer)]):
+    try:
+        payload = jwt.decode(token, SECRET_KE, algorithms=[ALGORITHM])
+        username: str = payload.get('sub')
+        user_id: int = payload.get('id')
+        if username is None or user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
+                                detail='could not validate credentials')
+        return {'username': username, 'id': user_id}
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
+                                detail='could not validate credentials')
+    
+
+""" pydantic dependency request """
 
 
 class CreateUserRequest(BaseModel):
@@ -71,13 +87,13 @@ class Token(BaseModel):
 
 
 
-@router.get("/auth/")
-async def read_all(db: db_dependecy, status_code=status.HTTP_200_OK):
+@router.get("/")
+async def read_all(db: db_dependency, status_code=status.HTTP_200_OK):
     return db.query(Users).all()
 
 
-@router.post("/auth/", status_code=status.HTTP_201_CREATED)
-async def create_user(db: db_dependecy, create_user_request: CreateUserRequest):
+@router.post("/create/", status_code=status.HTTP_201_CREATED)
+async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
     user_model = Users(
         username=create_user_request.username,
         email=create_user_request.email,
@@ -92,11 +108,12 @@ async def create_user(db: db_dependecy, create_user_request: CreateUserRequest):
 
 
 @router.post("/token", response_model=Token)
-async def login_acces_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependecy):
+async def login_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     
     user = user_auth(form_data.username, form_data.password, db)
     if not user:
-        return "there is no user or pasword"
-    token = create_acces_token(user.username, user.id, timedelta(minutes=20))
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
+                                detail='could not validate credentials')
+    token = create_access_token(user.username, user.id, timedelta(minutes=20))
     return {'access_token': token, 'token_type': "bearer"}
     
