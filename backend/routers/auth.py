@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 from database import SessionLocal
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import jwt
 from models import Users
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field
@@ -10,6 +12,9 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 router = APIRouter()
+
+SECRET_KE = "00dd1dd7df0dd87eae9acf1cf622d22c381a3f339b27d34aad911da34f1df161"
+ALGOITHM = "HS256"
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -36,8 +41,15 @@ def user_auth(user_name: str, password: str, db,):
         return False
     if not bcrypt_context.verify(password, user.hashed_password):
         return False
-    return True
+    return user
 
+
+def create_acces_token(username: str, user_id: int, expires_data: timedelta):
+    encode = {'sub': username, 'id': user_id}
+    expires = datetime.now(timezone.utc) + expires_data
+    encode.update({'exp': expires})
+    return jwt.encode(encode, SECRET_KE, algorithm=ALGOITHM)
+    
 
 """ pydantic derequest """
 
@@ -49,6 +61,14 @@ class CreateUserRequest(BaseModel):
     last_name: str
     role: str
     password: str = Field(min_length=6)
+
+
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 
 
 @router.get("/auth/")
@@ -71,11 +91,12 @@ async def create_user(db: db_dependecy, create_user_request: CreateUserRequest):
     db.commit()
 
 
-@router.post("/token")
+@router.post("/token", response_model=Token)
 async def login_acces_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependecy):
     
     user = user_auth(form_data.username, form_data.password, db)
     if not user:
         return "there is no user or pasword"
-    return "user and password matches"
+    token = create_acces_token(user.username, user.id, timedelta(minutes=20))
+    return {'access_token': token, 'token_type': "bearer"}
     
