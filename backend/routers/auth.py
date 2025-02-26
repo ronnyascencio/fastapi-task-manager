@@ -13,7 +13,7 @@ from starlette import status
 
 router = APIRouter( prefix="/auth", tags=["auth"])
 
-SECRET_KE = "00dd1dd7df0dd87eae9acf1cf622d22c381a3f339b27d34aad911da34f1df161"
+SECRET_KEY = "00dd1dd7df0dd87eae9acf1cf622d22c381a3f339b27d34aad911da34f1df161"
 ALGORITHM = "HS256"
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -47,17 +47,20 @@ def user_auth(user_name: str, password: str, db,):
 
 
 def create_access_token(username: str, user_id: int, role: str, expires_data: timedelta):
+    if not Users.role:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User role not found")
+
     encode = {'sub': username, 'id': user_id, 'role': role}
     expires = datetime.now(timezone.utc) + expires_data
     encode.update({'exp': expires})
-    return jwt.encode(encode, SECRET_KE, algorithm=ALGORITHM)
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 
     
 async def get_current_user(token: Annotated[str, Depends(oa2_bearer)]):
     try:
-        payload = jwt.decode(token, SECRET_KE, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get('sub')
         user_id: int = payload.get('id')
         user_role: str = payload.get('role')
@@ -123,4 +126,3 @@ async def login_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Dep
 
 
 
-"""user delate """
