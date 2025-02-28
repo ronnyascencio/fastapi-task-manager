@@ -2,7 +2,7 @@ from typing import Annotated
 
 from database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException, Path
-from models import Tasks
+from models import Tasks, Users
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -59,4 +59,18 @@ async def delete_all_tasks(user: user_dependency, db: db_dependency):
     for task in task_model:
         db.delete(task)
         db.commit()
+
+
+
+@router.delete("/{username}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(user: user_dependency, db: db_dependency, username: str):
+    if user is None or user.get('role') != 'admin':
+        raise HTTPException(status_code=401, detail='Authentication Failed')
     
+    user_model = db.query(Users).filter(Users.username == username).first()
+    
+    if user_model is None:
+        raise HTTPException(status_code=404, detail='username not found')
+    
+    db.query(Users).filter(Users.username == username).delete()
+    db.commit()
