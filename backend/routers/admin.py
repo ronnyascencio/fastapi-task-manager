@@ -45,3 +45,18 @@ async def delete_task(user: user_dependency, db: db_dependency, task_id: int = P
         raise HTTPException(status_code=404, detail='Task not found')
     db.query(Tasks).filter(Tasks.id == task_id).delete()
     db.commit()
+    
+@router.delete("/all_tasks", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_all_tasks(user: user_dependency, db: db_dependency):
+    if user is None or user.get("role") != 'admin':
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    task_model = db.query(Tasks).all()
+    
+    if task_model is None:
+        raise HTTPException(status_code=404, detail='no tasks found')
+ 
+    for task in task_model:
+        db.delete(task)
+        db.commit()
+    

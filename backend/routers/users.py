@@ -56,3 +56,17 @@ async def change_password(user: user_dependency, db: db_dependency,
     user_model.hashed_password = bcrypt_context.hash(password_request.new_password)
     db.add(user_model)
     db.commit()
+
+
+@router.delete("/{username}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(user: user_dependency, db: db_dependency, username: str):
+    if user is None or user.get('role') != 'admin':
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    user_model = db.query(Users).filter(Users.username == username).first()
+    
+    if user_model.username is None:
+        raise HTTPException(status_code=404, detail='username not found')
+    
+    db.query(Users).filter(Users.username == username).delete()
+    db.commit()

@@ -34,6 +34,7 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
+
 """User auth functions"""
 
 def user_auth(user_name: str, password: str, db,):
@@ -74,6 +75,8 @@ async def get_current_user(token: Annotated[str, Depends(oa2_bearer)]):
                                 detail='could not validate credentials')
     
 
+
+
 """ pydantic dependency request """
 
 
@@ -93,6 +96,7 @@ class Token(BaseModel):
     token_type: str
 
 
+    
 
 @router.get("/")
 async def read_all(db: db_dependency, status_code=status.HTTP_200_OK):
@@ -123,6 +127,9 @@ async def login_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Dep
                                 detail='could not validate credentials')
     token = create_access_token(user.username, user.id, user.role, timedelta(minutes=20))
     return {'access_token': token, 'token_type': "bearer"}
+
+
+
 
 
 
