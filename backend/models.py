@@ -3,7 +3,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 
 
 class Tasks(Base):
-    __tablename__ = "Tasks"
+    __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
@@ -14,7 +14,7 @@ class Tasks(Base):
 
 
 class Users(Base):
-    __tablename__ = "Users"
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True)
@@ -24,3 +24,5 @@ class Users(Base):
     status = Column(Boolean, default=True)
     hashed_password = Column(String)
     role = Column(String)
+    phone_number = Column(String)
+    
