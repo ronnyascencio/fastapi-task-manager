@@ -1,8 +1,8 @@
 from typing import Annotated
 
-from database import SessionLocal
+from ..database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException
-from models import Users
+from ..models import Users
 from passlib.context import CryptContext
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session

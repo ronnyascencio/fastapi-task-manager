@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from database import SessionLocal
+from ..database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from models import Users
+from ..models import Users
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session

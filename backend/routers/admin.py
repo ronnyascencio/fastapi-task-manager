@@ -1,8 +1,8 @@
 from typing import Annotated
 
-from database import SessionLocal
+from ..database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException, Path
-from models import Tasks, Users
+from ..models import Tasks, Users
 from sqlalchemy.orm import Session
 from starlette import status
 
