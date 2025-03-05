@@ -1,33 +1,24 @@
 [project]
 name = "fastapi-task-manager"
 version = "0.1.0"
-description = "task managment api"
-authors = [
-    {name = "Ronny Ascencio",email = "ronny.ascencio@icloud.com"}
-]
+description = "Task Manager api planed to use it as a task planner"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi (>=0.115.10,<0.116.0)",
-    "uvicorn (>=0.34.0,<0.35.0)",
-    "cryptography (>=44.0.1,<45.0.0)",
-    "psycopg2-binary (>=2.9.10,<3.0.0)",
-    "pymysql (>=1.1.1,<2.0.0)",
-    "python-jose (>=3.4.0,<4.0.0)",
-    "python-multipart (>=0.0.20,<0.0.21)",
-    "sqlalchemy (>=2.0.38,<3.0.0)",
-    "passlib (>=1.7.4,<2.0.0)",
-    "pytest (>=8.3.4,<9.0.0)",
-    "pytest-asyncio (>=0.25.3,<0.26.0)",
-    "httpx (>=0.28.1,<0.29.0)",
-    "aiofiles (>=24.1.0,<25.0.0)",
-    "jinja2 (>=3.1.5,<4.0.0)",
-    "bcrypt (>=4.3.0,<5.0.0)",
-    "pydantic[email] (>=2.10.6,<3.0.0)",
-    "ruff (>=0.9.9,<0.10.0)"
+    "aiofiles>=24.1.0",
+    "bcrypt>=4.3.0",
+    "cryptography>=44.0.2",
+    "fastapi>=0.115.11",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.5",
+    "passlib>=1.7.4",
+    "psycopg2-binary>=2.9.10",
+    "pydantic[email]>=2.10.6",
+    "pymysql>=1.1.1",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.3",
+    "python-jose>=3.4.0",
+    "python-multipart>=0.0.20",
+    "sqlalchemy>=2.0.38",
+    "uvicorn>=0.34.0",
 ]
-
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
